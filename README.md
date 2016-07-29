@@ -1,6 +1,6 @@
 # NASYNC 
 
-a customizable async tool for golang, (event bus, runtime)
+a customizable async task pool for golang, (event bus, runtime)
 
 ## Fetures
 
