@@ -29,10 +29,8 @@ go get github.com/leenanxi/nasync
 ```
 
 ```go
-import "github.com/leenanxi/nasync"
-
 func yourfucntion() {
-        nasync.Do(func,params...)
+        nasync.Do(function)
 }
 ```
 
