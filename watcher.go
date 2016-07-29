@@ -17,7 +17,6 @@ func (this *Async) watcher() {
 				i = this.bufSize
 			case <-this.quit:
 			// If quit signal received, cleans the channel
-			// and writes all of them to io.Writer.
 				for {
 					select {
 					case req := <-this.taskChan:
