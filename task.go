@@ -6,7 +6,6 @@ import (
 
 
 // model function into task
-
 type task struct {
 	handler reflect.Value
 	params []reflect.Value
