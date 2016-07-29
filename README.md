@@ -34,7 +34,6 @@ import "github.com/leenanxi/nasync"
 func yourfucntion() {
         nasync.Do(func,params...)
 }
-
 ```
 
 

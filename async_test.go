@@ -7,24 +7,27 @@ import (
 
 )
 
-func TestAsync(t *testing.T) {
 
+func TestAsyncTask(t *testing.T) {
+	Do(ping)
+	time.Sleep(5*time.Second)
+}
+
+
+func TestAsyncAdvanced(t *testing.T) {
 	//do async max 1000 tasks in max 10 go goroutine
 	as := New(1000,100)
+	defer as.Close()
 
 	handler := func(msg string) string {
 		fmt.Print(msg)
-		time.Sleep(time.Second/2)
 		return "pong";
 	}
+	as.Do(handler,"ping")
+	time.Sleep(5*time.Second)
+}
 
-
-	for i :=0;i<1000;i++ {
-		as.Do(handler,"ping " + fmt.Sprint(i))
-	}
-	fmt.Println("------------doing the task in async---------------")
-
-	time.Sleep(10*time.Second)
-
-	as.Close()
+func ping() string {
+	fmt.Println("ping")
+	return "pong";
 }
