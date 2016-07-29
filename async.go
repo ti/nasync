@@ -22,9 +22,7 @@ type Async struct {
 	quit    chan bool    // quit signal for the watcher to quit
 	taskChan chan *task  // queue used in non-runtime  tasks
 	bufSize int
-
 	wait *sync.WaitGroup
-	once sync.Once
 }
 
 func New(ReqSize int, BufSzie int) *Async {

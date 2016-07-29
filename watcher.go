@@ -2,6 +2,7 @@ package nasync
 
 import (
 	"time"
+	"fmt"
 )
 
 // watcher watches the async.queue channel, and writes the logs to output
@@ -40,6 +41,7 @@ func (this *Async) flushReq(b *buffer, t *task) {
 	b.Append(t)
 }
 
+
 // flushBuf flushes the content of buffer to out and reset the buffer
 func (this *Async) flushBuf(b *buffer) {
 	tasks := b.Tasks()
@@ -52,6 +54,7 @@ func (this *Async) flushBuf(b *buffer) {
 			}(t)
 		}
 		this.wait.Wait()
+		fmt.Print("\n")
 		b.Reset()
 	}
 }
