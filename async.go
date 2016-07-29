@@ -10,7 +10,6 @@ const (
 
 var DefaultAsync  *Async
 
-
 func Do(handler interface{},params ...interface{}){
 	if DefaultAsync == nil {
 		DefaultAsync = New(DEFAULT_REQSIZE,DEFAULT_BUFSIZE)

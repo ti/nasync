@@ -13,7 +13,7 @@ a customizable async task pool for golang, (event bus, runtime)
 
 golang is something easy but Fallible language, you may do this 
 
-```
+```go
     func yourfucntion() {
             go dosomething()  // this will got error on High load
     }
@@ -24,11 +24,11 @@ you may get "too many open files" error, when your application  in High load, so
 
 ## Simple Usage
 
-```
+```bash
 go get github.com/leenanxi/nasync
 ```
 
-```
+```go
 import "github.com/leenanxi/nasync"
 
 func yourfucntion() {
@@ -38,7 +38,7 @@ func yourfucntion() {
 
 
 ## Advanced Usage
-```
+```go
 import "github.com/leenanxi/nasync"
 
 func main() {
@@ -58,7 +58,7 @@ func doSometing(msg string) string{
 
 ## What if something callback ?
 
-```
+```go
 import "github.com/leenanxi/nasync"
 
 func main() {
