@@ -19,8 +19,11 @@ golang is something easy but Fallible language, you may do this
     }
 ```
 
-you may get "too many open files" error, when your application  in High load, so you need this 
+you may get "too many open files" error, when your application  in High load, so you need this,you can do any thing in async use this, it is trusty。your can use this for:
 
+* http or file writer logging
+* improve main thread speed
+* limited background task pool
 
 ## Simple Usage
 
