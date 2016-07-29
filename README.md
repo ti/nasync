@@ -15,11 +15,8 @@ golang is something easy but Fallible language, you may do this
 
 ```
     func yourfucntion() {
-    
-            go dosomething()  // DO NOT DO THIS IN SERVER SIDE APP !
-        
+            go dosomething()  // this will got error on High load
     }
-
 ```
 
 you may get "too many open files" error, when your application  in High load, so you need this 
