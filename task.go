@@ -5,13 +5,14 @@ import (
 )
 
 
-//一个任务
+// model function into task
+
 type task struct {
 	handler reflect.Value
 	params []reflect.Value
 }
 
-//新建一个任务
+
 func newTask(handler interface{},params ...interface{}) *task {
 
 	handlerValue := reflect.ValueOf(handler);
@@ -32,7 +33,6 @@ func newTask(handler interface{},params ...interface{}) *task {
 	panic("handler not func");
 }
 
-//启动异步任务
 func (this *task) Do() []reflect.Value {
 	return this.handler.Call(this.params)
 }
