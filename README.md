@@ -9,6 +9,48 @@ a customizable async task pool for golang, (event bus, runtime)
 * max gorutines and memory customizable
 * more safe
 
+
+## Simple Usage
+
+```bash
+go get github.com/leenanxi/nasync
+```
+
+```go
+func yourfucntion() 
+	nasync.Do(func() {
+			http.Get("https://github.com/leenanxi/")
+		})
+}
+```
+
+```go
+func yourfucntion() 
+	//function is your fuction
+        nasync.Do(function)
+}
+```
+
+
+## Advanced Usage
+```go
+import "github.com/leenanxi/nasync"
+
+func main() {
+        //new a async pool in max 1000 task in max 1000 gorutines
+        async := nasync.New(1000,1000)
+        defer async.Close()
+        async.Do(doSometing,"hello word")
+}
+
+
+func doSometing(msg string) string{
+	return "i am done by " + msg
+}
+
+
+```
+
 # WHY
 
 golang is something easy but Fallible language, you may do this 
@@ -24,38 +66,6 @@ you may get "too many open files" error, when your application  in High load, so
 * http or file writer logging
 * improve main thread speed
 * limited background task pool
-
-## Simple Usage
-
-```bash
-go get github.com/leenanxi/nasync
-```
-
-```go
-func yourfucntion() {
-        nasync.Do(function)
-}
-```
-
-
-## Advanced Usage
-```go
-import "github.com/leenanxi/nasync"
-
-func main() {
-        //new a async pool in max 1000 task in max 1000 gorutines
-        async := nasync.New(1000,1000)
-        defer async.Close()
-        async.Do(yourfunc,yourparams)
-}
-
-func doSometing(msg string) string{
-	return "i am done by " + msg
-}
-
-```
-
-
 
 ## What if something callback ?
 
@@ -74,7 +84,3 @@ func doSometing(msg string) string{
 }
 
 ```
-
-
-
-
