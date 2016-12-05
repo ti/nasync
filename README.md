@@ -53,7 +53,7 @@ func doSometing(msg string) string{
 
 # WHY
 
-golang is something easy but Fallible language, you may do this 
+golang is something easy but fallible language, you may do this 
 
 ```go
    func yourfucntion() {
@@ -61,7 +61,7 @@ golang is something easy but Fallible language, you may do this
     }
 ```
 
-you may get "too many open files" error, when your application  in High load, so you need this,you can do any thing in async use this, it is trusty。your can use this for:
+you may get "too many open files" error, when your application  in High load, so you need this, you can do any thing in async by this, it is trusty。your can use this for:
 
 * http or file writer logging
 * improve main thread speed
