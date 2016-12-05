@@ -56,8 +56,9 @@ func doSometing(msg string) string{
 golang is something easy but Fallible language, you may do this 
 
 ```go
-    func yourfucntion() {
-            go dosomething()  // this will got error on High load
+    //the go gorutines is limited by system, so this will got error on high load
+    go func yourfucntion() {
+            go dosomething()  // this will got error on high load
     }
 ```
 
