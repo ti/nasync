@@ -12,26 +12,17 @@ a customizable async task pool for golang, (event bus, runtime)
 
 ## Simple Usage
 
-```bash
-go get github.com/leenanxi/nasync
+```go
+nasync.Do(function)
 ```
 
-```go
-func yourfucntion() 
-        nasync.Do(function)
-}
-```
-
-```go
-func yourfucntion() 
-	nasync.Do(func() {
-			http.Get("https://github.com/leenanxi/")
-		})
-}
-```
 
 
 ## Advanced Usage
+
+```bash
+go get github.com/leenanxi/nasync
+```
 ```go
 import "github.com/leenanxi/nasync"
 
@@ -40,6 +31,10 @@ func main() {
         async := nasync.New(1000,1000)
         defer async.Close()
         async.Do(doSometing,"hello word")
+	
+	nasync.Do(func() {
+			http.Get("https://github.com/leenanxi/")
+		})
 }
 
 
