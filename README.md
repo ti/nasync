@@ -18,16 +18,15 @@ go get github.com/leenanxi/nasync
 
 ```go
 func yourfucntion() 
-	nasync.Do(func() {
-			http.Get("https://github.com/leenanxi/")
-		})
+        nasync.Do(function)
 }
 ```
 
 ```go
 func yourfucntion() 
-	//function is your fuction
-        nasync.Do(function)
+	nasync.Do(func() {
+			http.Get("https://github.com/leenanxi/")
+		})
 }
 ```
 
