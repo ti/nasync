@@ -21,10 +21,10 @@ nasync.Do(function)
 ## Advanced Usage
 
 ```bash
-go get github.com/leenanxi/nasync
+go get github.com/ti/nasync
 ```
 ```go
-import "github.com/leenanxi/nasync"
+import "github.com/ti/nasync"
 
 func main() {
         //new a async pool in max 1000 task in max 1000 gorutines
@@ -32,7 +32,7 @@ func main() {
         defer async.Close()
         async.Do(doSometing,"hello word")
         nasync.Do(func() {
-			http.Get("https://github.com/leenanxi/")
+			http.Get("https://github.com/ti/")
 		})
 }
 
@@ -63,7 +63,7 @@ you may get "too many open files" error, when your application  in High load, so
 ## What if something callback ?
 
 ```go
-import "github.com/leenanxi/nasync"
+import "github.com/ti/nasync"
 
 func main() {
         nasync.Do(func() {
