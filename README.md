@@ -16,7 +16,20 @@ a customizable async task pool for golang, (event bus, runtime)
 nasync.Do(function)
 ```
 
+## Async Http Client
 
+```go
+http.DefaultTransport.(*http.Transport).MaxIdleConns = 2000
+http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 1000
+	
+nasync.Do(func() {
+    resp, err := http.Get("http://example.com")
+    if err == nil {
+        io.Copy(ioutil.Discard, resp.Body)
+        resp.Body.Close()
+    }
+})
+```
 
 ## Advanced Usage
 
