@@ -3,19 +3,24 @@ package nasync
 import "sync"
 
 const (
-	DEFAULT_REQSIZE = 1000
-	DEFAULT_BUFSIZE = 1000
+	//DefaultReqSize Default max goroutine created
+	DefaultReqSize = 1000
+	//DefaultBufSize Default task when on goroutine
+	DefaultBufSize = 1000
 )
 
+//DefaultAsync default instance when you run Do(...)
 var DefaultAsync *Async
 
+//Do use nasync do some functions
 func Do(handler interface{}, params ...interface{}) {
 	if DefaultAsync == nil {
-		DefaultAsync = New(DEFAULT_REQSIZE, DEFAULT_BUFSIZE)
+		DefaultAsync = New(DefaultReqSize, DefaultBufSize)
 	}
 	DefaultAsync.Do(handler, params...)
 }
 
+//Async  async model
 type Async struct {
 	quit     chan bool  // quit signal for the watcher to quit
 	taskChan chan *task // queue used in non-runtime  tasks
@@ -23,6 +28,7 @@ type Async struct {
 	wait     *sync.WaitGroup
 }
 
+//New custom your async
 func New(ReqSize int, BufSzie int) *Async {
 	as := Async{
 		quit:     make(chan bool),
@@ -35,16 +41,16 @@ func New(ReqSize int, BufSzie int) *Async {
 	return &as
 }
 
-// Destroy sends quit signal to watcher and releases all the resources.
-func (this *Async) Do(handler interface{}, params ...interface{}) {
+//Do do some functions
+func (a *Async) Do(handler interface{}, params ...interface{}) {
 	t := newTask(handler, params...)
-	this.taskChan <- t
+	a.taskChan <- t
 }
 
-// Destroy sends quit signal to watcher and releases all the resources.
+// Close sends quit signal to watcher and releases all the resources.
 // Wait for all tasks complete to close
-func (this *Async) Close() {
-	this.quit <- true
+func (a *Async) Close() {
+	a.quit <- true
 	// wait for watcher quit
-	<-this.quit
+	<-a.quit
 }

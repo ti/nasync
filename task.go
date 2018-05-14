@@ -30,6 +30,7 @@ func newTask(handler interface{}, params ...interface{}) *task {
 	panic("handler not func")
 }
 
-func (this *task) Do() []reflect.Value {
-	return this.handler.Call(this.params)
+//Do single task functions do
+func (t *task) Do() []reflect.Value {
+	return t.handler.Call(t.params)
 }

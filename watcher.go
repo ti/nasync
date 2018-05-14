@@ -5,52 +5,52 @@ import (
 )
 
 // watcher watches the async.queue channel, and writes the logs to output
-func (this *Async) watcher() {
+func (a *Async) watcher() {
 	var buf buffer
 	for {
 		timeout := time.After(time.Second / 10)
-		for i := 0; i < this.bufSize; i++ {
+		for i := 0; i < a.bufSize; i++ {
 			select {
-			case req := <-this.taskChan:
-				this.flushReq(&buf, req)
+			case req := <-a.taskChan:
+				a.flushReq(&buf, req)
 			case <-timeout:
-				i = this.bufSize
-			case <-this.quit:
+				i = a.bufSize
+			case <-a.quit:
 				// If quit signal received, cleans the channel
 				for {
 					select {
-					case req := <-this.taskChan:
-						this.flushReq(&buf, req)
+					case req := <-a.taskChan:
+						a.flushReq(&buf, req)
 					default:
-						this.flushBuf(&buf)
-						this.quit <- true
+						a.flushBuf(&buf)
+						a.quit <- true
 						return
 					}
 				}
 			}
 		}
-		this.flushBuf(&buf)
+		a.flushBuf(&buf)
 	}
 }
 
 // flushReq handles the request and writes the result to writer
-func (this *Async) flushReq(b *buffer, t *task) {
+func (a *Async) flushReq(b *buffer, t *task) {
 	//do print for this
 	b.Append(t)
 }
 
 // flushBuf flushes the content of buffer to out and reset the buffer
-func (this *Async) flushBuf(b *buffer) {
+func (a *Async) flushBuf(b *buffer) {
 	tasks := b.Tasks()
 	if len(tasks) > 0 {
 		for _, t := range tasks {
-			this.wait.Add(1)
+			a.wait.Add(1)
 			go func(t *task) {
 				t.Do()
-				this.wait.Done()
+				a.wait.Done()
 			}(t)
 		}
-		this.wait.Wait()
+		a.wait.Wait()
 		b.Reset()
 	}
 }
