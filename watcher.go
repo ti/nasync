@@ -16,7 +16,7 @@ func (this *Async) watcher() {
 			case <-timeout:
 				i = this.bufSize
 			case <-this.quit:
-			// If quit signal received, cleans the channel
+				// If quit signal received, cleans the channel
 				for {
 					select {
 					case req := <-this.taskChan:
@@ -33,13 +33,11 @@ func (this *Async) watcher() {
 	}
 }
 
-
 // flushReq handles the request and writes the result to writer
 func (this *Async) flushReq(b *buffer, t *task) {
 	//do print for this
 	b.Append(t)
 }
-
 
 // flushBuf flushes the content of buffer to out and reset the buffer
 func (this *Async) flushBuf(b *buffer) {
@@ -56,5 +54,3 @@ func (this *Async) flushBuf(b *buffer) {
 		b.Reset()
 	}
 }
-
-

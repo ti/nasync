@@ -1,9 +1,8 @@
 package nasync
 
-
 type buffer struct {
-	buf       []*task            // contents are the bytes buf[off : len(buf)]
-	off       int                // read at &buf[off], write at &buf[len(buf)]
+	buf []*task // contents are the bytes buf[off : len(buf)]
+	off int     // read at &buf[off], write at &buf[len(buf)]
 }
 
 func (b *buffer) Reset() {
@@ -31,6 +30,5 @@ func (b *buffer) Tasks() []*task {
 }
 
 func (b *buffer) Append(t *task) {
-	b.buf = append(b.buf,t)
+	b.buf = append(b.buf, t)
 }
-

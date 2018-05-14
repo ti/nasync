@@ -10,10 +10,9 @@ func TestTask(t *testing.T) {
 		if msg == "ping" {
 			return "pong"
 		}
-		return "error";
+		return "error"
 	}
-	tsk := newTask(handler,"ping")
+	tsk := newTask(handler, "ping")
 	tsk.Do()
-	time.Sleep(2*time.Second)
+	time.Sleep(2 * time.Second)
 }
-
