@@ -1,5 +1,7 @@
 # NASYNC 
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/ti/nasync)](https://goreportcard.com/report/github.com/ti/nasync)
+
 a customizable async task pool for golang, (event bus, runtime)
 
 ## Fetures
