@@ -15,15 +15,12 @@ type TaskQueue struct {
 	taskChanSize   int64      // queue buffer size
 	chanAutoResize bool
 
-	goroutineCount      int  //task worker goroutine number
-	goroutineAutoResize bool //协程个数自动扩容
-	goroutineContext    context.Context
-	closeFunc           context.CancelFunc
+	goroutineCount   int //task worker goroutine number
+	goroutineContext context.Context
+	closeFunc        context.CancelFunc
 
-	lostMessageCount int //丢失的消息个数
-
-	sendTaskBlock   bool          //task send 是否阻塞
-	sendTaskTimeout time.Duration //阻塞send 超时的时间
+	sendTaskBlock   bool          //
+	sendTaskTimeout time.Duration //block send timeout
 
 	syncMutex *sync.Mutex
 
@@ -31,14 +28,39 @@ type TaskQueue struct {
 	closed  bool
 }
 
-func NewTaskQueue(queueSize int64, goroutineCount int) *TaskQueue {
+func NewUnBlockQueue(queueSize int64, handlerNum int) *TaskQueue {
+
+	queue := newTaskQueue(queueSize, handlerNum)
+
+	return queue
+}
+
+func NewBlockQueue(queueSize int64, handlerNum int) *TaskQueue {
+
+	queue := newTaskQueue(queueSize, handlerNum)
+
+	queue.setSendBlock()
+
+	return queue
+}
+
+func NewBlockTimeoutQueue(queueSize int64, handlerNum int, timeout time.Duration) *TaskQueue {
+
+	queue := newTaskQueue(queueSize, handlerNum)
+
+	queue.setSendBlockWithTimeout(timeout)
+
+	return queue
+}
+
+func newTaskQueue(queueSize int64, handlerNum int) *TaskQueue {
 
 	if queueSize < 1 {
 		panic("queueSize must greater than 0")
 	}
 
-	if goroutineCount < 1 {
-		panic("goroutineCount must greater than 0")
+	if handlerNum < 1 {
+		panic("handlerNum must greater than 0")
 	}
 
 	taskQueue := &TaskQueue{}
@@ -46,36 +68,34 @@ func NewTaskQueue(queueSize int64, goroutineCount int) *TaskQueue {
 	taskQueue.taskChanSize = queueSize
 	taskQueue.taskChan = make(chan *task, queueSize)
 
-	taskQueue.goroutineCount = goroutineCount
 	taskQueue.goroutineContext, taskQueue.closeFunc = context.WithCancel(context.Background())
 
-	taskQueue.sendTaskBlock = false //默认非阻塞
-	taskQueue.sendTaskTimeout = 0   //默认阻塞情况下不超时
+	taskQueue.sendTaskBlock = false //default not block
+	taskQueue.sendTaskTimeout = 0
 
 	taskQueue.syncMutex = &sync.Mutex{}
 
-	//启动协程 异步处理task
-	taskQueue.initHandler()
+	//init handler goroutine
+	taskQueue.initHandler(handlerNum)
 
 	return taskQueue
 }
 
-//非阻塞发送
-func (tq *TaskQueue) SetSendUnBlock() {
+//unblock
+func (tq *TaskQueue) setSendUnBlock() {
 	tq.sendTaskBlock = false
 }
 
-//阻塞发送  无限超时
-func (tq *TaskQueue) SetSendBlock() {
+//block send until succeed
+func (tq *TaskQueue) setSendBlock() {
 	tq.sendTaskBlock = true
 	tq.sendTaskTimeout = 0
 }
 
-//阻塞发送 超时限制
-func (tq *TaskQueue) SetSendBlockWithTimeout(timeout time.Duration) {
+//block send until timeout
+func (tq *TaskQueue) setSendBlockWithTimeout(timeout time.Duration) {
 	if timeout < 0 {
 		timeout = 0
-
 	}
 
 	tq.sendTaskBlock = true
@@ -101,26 +121,26 @@ func (tq *TaskQueue) Send(handler interface{}, params ...interface{}) (resultSta
 	task := newTask(handler, params...)
 
 	if tq.sendTaskBlock {
-		if tq.sendTaskTimeout > 0 { //超时控制
+		if tq.sendTaskTimeout > 0 { //timeout
 			select {
 			case tq.taskChan <- task:
 				tq.log(LEVEL_DEBUG, fmt.Sprintf("send task %v", task))
 			case <-time.After(tq.sendTaskTimeout):
-				tq.log(LEVEL_INFO, fmt.Sprintf("task abandoned for timeout %d, %v", tq.sendTaskTimeout, task))
+				tq.log(LEVEL_WARN, fmt.Sprintf("task abandoned for timeout %d", tq.sendTaskTimeout))
 				return false, &Error{Code: ERROR_TIMEOUT, Msg: "task abandoned for timeout"}
 			}
 
 		} else {
-			tq.taskChan <- task //一直阻塞直到成功
+			tq.taskChan <- task //block until success
 			tq.log(LEVEL_DEBUG, fmt.Sprintf("send task %v", task))
 		}
 
-	} else { //非阻塞send task
+	} else { //unblock send task
 		select {
 		case tq.taskChan <- task:
 			tq.log(LEVEL_DEBUG, fmt.Sprintf("send task %v", task))
 		default:
-			tq.log(LEVEL_INFO, fmt.Sprintf("task abandoned for queue full %d, %v", tq.taskChanSize, task))
+			tq.log(LEVEL_WARN, fmt.Sprintf("task abandoned for queue full, chanSize:%d", tq.taskChanSize))
 			return false, &Error{Code: ERROR_QUEUE_FULL, Msg: "task abandoned for queue full"}
 		}
 	}
@@ -128,16 +148,19 @@ func (tq *TaskQueue) Send(handler interface{}, params ...interface{}) (resultSta
 	return true, nil
 }
 
-//处理task
-func (tq *TaskQueue) initHandler() {
+func (tq *TaskQueue) initHandler(handlerNum int) {
 
-	for i := 0; i < tq.goroutineCount; i++ {
+	for i := 0; i < handlerNum; i++ {
 		tq.AddHandler()
 	}
 }
 
-//增加协程
-func (tq *TaskQueue) AddHandler() {
+//add handler goroutine
+func (tq *TaskQueue) AddHandler() bool {
+	if tq.closed {
+		return false
+	}
+
 	tq.syncMutex.Lock()
 
 	defer tq.syncMutex.Unlock()
@@ -150,8 +173,20 @@ func (tq *TaskQueue) AddHandler() {
 
 			select {
 			case task := <-tq.taskChan:
-				task.Do()
-				tq.log(LEVEL_DEBUG, fmt.Sprintf("gid:%d, handle task %v", gid, task))
+				if task != nil {
+					func() {
+						defer func() {
+							if err := recover(); err != nil {
+								tq.log(LEVEL_WARN, fmt.Sprintf("gid:%d, handle task error %v", gid, err))
+							}
+
+						}()
+						task.Do()
+						tq.log(LEVEL_DEBUG, fmt.Sprintf("gid:%d, handle task %v", gid, task))
+
+					}()
+				}
+
 			case <-tq.goroutineContext.Done():
 				tq.log(LEVEL_INFO, fmt.Sprintf("close handler goroutine %d", gid))
 				return
@@ -159,19 +194,30 @@ func (tq *TaskQueue) AddHandler() {
 		}
 
 	}()
+
+	tq.goroutineCount++
+
+	return true
 }
 
 //关闭队列
 func (tq *TaskQueue) Close() {
 	tq.syncMutex.Lock()
 
-	defer tq.syncMutex.Unlock()
-	if !tq.closed {
-		close(tq.taskChan)
+	defer func() {
+		if err := recover(); err != nil {
+			tq.log(LEVEL_WARN, fmt.Sprintf("close error %+v", err))
+		}
 
 		tq.closeFunc()
 
 		tq.closed = true
+
+		tq.syncMutex.Unlock()
+	}()
+
+	if !tq.closed {
+		close(tq.taskChan)
 	}
 }
 
