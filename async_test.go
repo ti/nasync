@@ -3,11 +3,12 @@ package nasync
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestAsyncTask(t *testing.T) {
 	Do(ping)
-	//time.Sleep(5 * time.Second)
+	time.Sleep(5 * time.Second)
 }
 
 func TestAsyncAdvanced(t *testing.T) {
@@ -20,7 +21,7 @@ func TestAsyncAdvanced(t *testing.T) {
 		return "pong"
 	}
 	as.Do(handler, "ping")
-	//time.Sleep(5 * time.Second)
+	time.Sleep(5 * time.Second)
 }
 
 func ping() string {
