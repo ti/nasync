@@ -115,10 +115,8 @@ func TestClose(t *testing.T) {
 	fmt.Printf("%s queue size chanSize:%d, goroutineCount:%d\n", logPrefix, chanSize, goroutineCount)
 
 	go func() {
-
 		time.Sleep(time.Second * 3)
 		taskQueue.Close()
-
 	}()
 
 	for i := 0; i <= 0; i++ {
