@@ -8,6 +8,13 @@ import (
 func (a *Async) watcher() {
 	var buf buffer
 	for {
+		if a.waiting {
+			time.Sleep(time.Second)
+			if len(a.taskChan) == 0 {
+				a.done <- true
+				return
+			}
+		}
 		timeout := time.After(time.Second / 10)
 		for i := 0; i < a.bufSize; i++ {
 			select {

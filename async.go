@@ -1,6 +1,8 @@
 package nasync
 
-import "sync"
+import (
+	"sync"
+)
 
 const (
 	//DefaultReqSize Default max goroutine created
@@ -9,10 +11,10 @@ const (
 	DefaultBufSize = 1000
 )
 
-//DefaultAsync default instance when you run Do(...)
+// DefaultAsync default instance when you run Do(...)
 var DefaultAsync *Async
 
-//Do use nasync do some functions
+// Do use nasync do some functions
 func Do(handler interface{}, params ...interface{}) {
 	if DefaultAsync == nil {
 		DefaultAsync = New(DefaultReqSize, DefaultBufSize)
@@ -20,28 +22,32 @@ func Do(handler interface{}, params ...interface{}) {
 	DefaultAsync.Do(handler, params...)
 }
 
-//Async  async model
+// Async  async model
 type Async struct {
 	quit     chan bool  // quit signal for the watcher to quit
 	taskChan chan *task // queue used in non-runtime  tasks
 	bufSize  int
 	wait     *sync.WaitGroup
+
+	waiting bool
+	done    chan bool // wait signal for the watcher to quit
 }
 
-//New custom your async
+// New custom your async
 func New(ReqSize int, BufSzie int) *Async {
 	as := Async{
 		quit:     make(chan bool),
 		taskChan: make(chan *task, ReqSize),
 		bufSize:  BufSzie,
 		wait:     &sync.WaitGroup{},
+		done:     make(chan bool),
 	}
 
 	go as.watcher()
 	return &as
 }
 
-//Do do some functions
+// Do some functions
 func (a *Async) Do(handler interface{}, params ...interface{}) {
 	t := newTask(handler, params...)
 	a.taskChan <- t
@@ -53,4 +59,10 @@ func (a *Async) Close() {
 	a.quit <- true
 	// wait for watcher quit
 	<-a.quit
+}
+
+// Wait for all tasks complete to close
+func (a *Async) Wait() {
+	a.waiting = true
+	<-a.done
 }
