@@ -56,6 +56,47 @@ func doSometing(msg string) string{
 
 ```
 
+## Async queue
+
+```go
+import "github.com/ti/nasync"
+
+func main() {
+        //new a async pool in max 1000 task in max 1000 gorutines
+        async := nasync.New(1000,1000)
+        defer async.Close()
+        async.Do(doSometing,"hello word")
+
+        //new a task queue with chan size 1000 in max 100 gorutines
+        taskQueue := NewUnBlockQueue(1000, 100)
+	    //taskQueue := NewBlockTimeoutQueue(1000, 100, time.Second*1)
+        //taskQueue := nasync.NewBlockQueue(1000, 100) 
+
+        go func() {
+                time.Sleep(time.Second * 3)
+                taskQueue.Close()
+        }()
+
+        for j := 1; j <= 20; j++ {
+
+            _, err := taskQueue.Send(doSometing, fmt.Sprintf("handle, task :%d", j))
+
+            if err != nil {
+                fmt.Printf(" send task fail: %v\n", err)
+            } else {
+                fmt.Printf(" send task success: %d\n", j)
+            }
+        }
+}
+
+
+func doSometing(msg string) string{
+	return "i am done by " + msg
+}
+
+
+```
+
 # WHY
 
 golang is something easy but fallible language, you may do this 
